@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythagoras Theorem Quiz - GCSE Foundation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .quiz-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .question {
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        label:hover {
+            background: #e2e8f0;
+        }
+        
+        input[type="radio"], input[type="text"] {
+            margin-right: 10px;
+        }
+        
+        input[type="text"] {
+            padding: 8px;
+            width: 100px;
+            border: 2px solid #cbd5e0;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        #result {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            min-height: 40px;
+        }
+        
+        .score {
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .correct {
+            color: #38a169;
+        }
+        
+        .incorrect {
+            color: #e53e3e;
+        }
+        
+        .certificate {
+            display: none;
+            border: 10px solid gold;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            margin: 20px auto;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+        
+        .certificate h2 {
+            color: #2d3748;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .certificate p {
+            font-size: 20px;
+            color: #4a5568;
+        }
+        
+        .student-name {
+            font-size: 28px;
+            color: #2b6cb0;
+            margin: 20px 0;
+            padding: 10px;
+            border-bottom: 2px solid gold;
+            display: inline-block;
+        }
+        
+        .diagram {
+            text-align: center;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 16px;
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>📐 Pythagoras Theorem Quiz - GCSE Foundation</h1>
+        
+        <div id="quiz"></div>
+        
+        <div class="controls">
+            <button onclick="checkAnswers()">Submit Answers</button>
+            <button onclick="generateNewQuiz()">New Quiz</button>
+            <button onclick="showCertificate()" id="certBtn" style="display:none; background:#d69e2e;">View Certificate</button>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="certificate" id="certificate">
+            <h2>🏆 Certificate of Achievement</h2>
+            <p>This certifies that</p>
+            <div class="student-name" id="studentName">[Your Name]</div>
+            <p>has successfully completed the Pythagoras Theorem Quiz with a perfect score of 10/10</p>
+            <p><strong>Date:</strong> <span id="certDate"></span></p>
+            <p><strong>Topics mastered:</strong> Finding hypotenuse, finding shorter sides, identifying right triangles</p>
+            <button onclick="printCertificate()" style="background:#d69e2e;">Print Certificate</button>
+            <button onclick="shareCertificate()" style="background:#38a169;">Share</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuiz = [];
+        
+        // Question templates with placeholders for random numbers
+        const questionTemplates = [
+            {
+                type: 'mcq',
+                text: `Find the hypotenuse of a right triangle with legs {a} cm and {b} cm.`,
+                diagram: () => `
+                <div class="diagram">
+                    │\\\\<br>
+                    │ \\\\<br>
+                    {a} │  \\\\ x<br>
+                    │   \\\\<br>
+                    └────┘<br>
+                       {b}
+                </div>`,
+                correct: (a, b) => Math.sqrt(a*a + b*b),
+                options: (a, b, correct) => [
+                    correct.toFixed(1),
+                    (Math.sqrt(a*a + b*b) + 2).toFixed(1),
+                    (a + b).toFixed(1),
+                    (Math.sqrt(a*a + b*b) * 1.5).toFixed(1)
+                ]
+            },
+            {
+                type: 'mcq',
+                text: `Find the missing shorter side. Hypotenuse = {c} cm, one side = {a} cm.`,
+                diagram: () => `
+                <div class="diagram">
+                      x<br>
+                    ┌───┐<br>
+                    │  \\\\<br>
+                    │   \\\\ {c}<br>
+                    {a} │    \\\\<br>
+                    │     \\\\<br>
+                    └──────┘
+                </div>`,
+                correct: (c, a) => Math.sqrt(c*c - a*a),
+                options: (c, a, correct) => [
+                    correct.toFixed(1),
+                    (Math.sqrt(c*c - a*a) - 1).toFixed(1),
+                    (c - a).toFixed(1),
+                    ((c + a)/2).toFixed(1)
+                ]
+            },
+            {
+                type: 'direct',
+                text: `A ladder {c} m long leans against a wall. The base is {a} m from the wall. How high up does it reach?`,
+                diagram: () => `
+                <div class="diagram">
+                    Wall<br>
+                      │<br>
+                      │<br>
+                    h │\\\\ {c}<br>
+                      │ \\\\<br>
+                      │  \\\\<br>
+                      └───┘<br>
+                        {a}
+                </div>`,
+                correct: (c, a) => Math.sqrt(c*c - a*a)
+            },
+            {
+                type: 'mcq',
+                text: `Which set of numbers forms a right triangle?`,
+                correct: () => null,
+                options: () => {
+                    const sets = [
+                        [3, 4, 5],
+                        [5, 6, 7],
+                        [8, 9, 10],
+                        [6, 8, 11]
+                    ];
+                    return sets.map(set => set.join(', '));
+                },
+                correctIndex: 0
+            },
+            {
+                type: 'direct',
+                text: `A ship sails 60 km east and {b} km north. How far is it from start?`,
+                diagram: () => `
+                <div class="diagram">
+                    Start<br>
+                      •<br>
+                      │\\<br>
+                      │ \\<br>
+                      │  \\ d<br>
+                      │   \\<br>
+                      •────•<br>
+                     60   {b}
+                </div>`,
+                correct: (b) => Math.sqrt(60*60 + b*b)
+            },
+            {
+                type: 'mcq',
+                text: `Triangle has sides {a}, {b}, and {c}. Is it right-angled?`,
+                correct: (a, b, c) => {
+                    const sides = [a, b, c].sort((x, y) => x - y);
+                    return Math.abs(sides[2]*sides[2] - (sides[0]*sides[0] + sides[1]*sides[1])) < 0.1;
+                },
+                options: () => ['Yes', 'No'],
+                correctText: 'Yes'
+            },
+            {
+                type: 'direct',
+                text: `Find diagonal of rectangle {l} cm by {w} cm.`,
+                correct: (l, w) => Math.sqrt(l*l + w*w)
+            },
+            {
+                type: 'mcq',
+                text: `What is Pythagoras' Theorem formula?`,
+                options: () => [
+                    'a² + b² = c²',
+                    'a + b = c',
+                    'a² - b² = c²',
+                    'a × b = c²'
+                ],
+                correctIndex: 0
+            },
+            {
+                type: 'direct',
+                text: `A right triangle has hypotenuse {c} and one leg {a}. Find other leg.`,
+                correct: (c, a) => Math.sqrt(c*c - a*a)
+            },
+            {
+                type: 'mcq',
+                text: `In a² + b² = c², what is c called?`,
+                options: () => ['Hypotenuse', 'Adjacent', 'Opposite', 'Base'],
+                correctIndex: 0
+            }
+        ];
+        
+        function generateQuestion(template) {
+            let a, b, c;
+            
+            // Generate random Pythagorean triples or numbers
+            const triples = [[3,4,5], [5,12,13], [6,8,10], [7,24,25], [8,15,17], [9,12,15]];
+            const triple = triples[Math.floor(Math.random() * triples.length)];
+            
+            switch(template.text.split(' ')[0]) {
+                case 'Find': // Finding hypotenuse
+                    a = Math.floor(Math.random() * 12) + 3;
+                    b = Math.floor(Math.random() * 12) + 3;
+                    c = Math.sqrt(a*a + b*b);
+                    break;
+                case 'A': // Ladder/real world problems
+                    c = Math.floor(Math.random() * 15) + 10;
+                    a = Math.floor(Math.random() * (c-3)) + 3;
+                    break;
+                case 'Which': // Right triangle identification
+                    return {
+                        type: template.type,
+                        text: template.text,
+                        options: template.options(),
+                        correctIndex: template.correctIndex
+                    };
+                case 'Triangle': // Is it right-angled?
+                    if(Math.random() > 0.5) {
+                        // Make it right-angled
+                        const t = triples[Math.floor(Math.random() * triples.length)];
+                        [a, b, c] = t;
+                    } else {
+                        // Make it non-right-angled
+                        a = Math.floor(Math.random() * 10) + 5;
+                        b = Math.floor(Math.random() * 10) + 5;
+                        c = Math.floor(Math.random() * 5) + (a + b - 2);
+                    }
+                    break;
+                case 'In': // Theory question
+                    return {
+                        type: template.type,
+                        text: template.text,
+                        options: template.options(),
+                        correctIndex: template.correctIndex
+                    };
+                default: // Default case
+                    a = Math.floor(Math.random() * 15) + 5;
+                    b = Math.floor(Math.random() * 15) + 5;
+                    c = Math.sqrt(a*a + b*b);
+            }
+            
+            // Replace placeholders in text
+            let text = template.text
+                .replace(/{a}/g, a)
+                .replace(/{b}/g, b)
+                .replace(/{c}/g, c)
+                .replace(/{l}/g, a)
+                .replace(/{w}/g, b);
+            
+            // Replace in diagram
+            let diagram = '';
+            if(template.diagram) {
+                diagram = template.diagram()
+                    .replace(/{a}/g, a)
+                    .replace(/{b}/g, b)
+                    .replace(/{c}/g, c)
+                    .replace(/{l}/g, a)
+                    .replace(/{w}/g, b);
+            }
+            
+            // Calculate correct answer
+            let correctAnswer;
+            if(template.correctIndex !== undefined) {
+                correctAnswer = template.options()[template.correctIndex];
+            } else if(template.correctText) {
+                correctAnswer = template.correctText;
+            } else {
+                correctAnswer = template.correct(a, b, c).toFixed(1);
+            }
+            
+            // Generate options for MCQ
+            let options = [];
+            if(template.type === 'mcq' && template.options) {
+                options = template.options(a, b, template.correct(a, b, c));
+                // Shuffle options
+                for(let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+            }
+            
+            return {
+                type: template.type,
+                text: text,
+                diagram: diagram,
+                correct: correctAnswer.toString(),
+                options: options,
+                values: {a, b, c}
+            };
+        }
+        
+        function generateNewQuiz() {
+            currentQuiz = [];
+            const usedIndices = new Set();
+            
+            // Generate 10 unique questions
+            while(currentQuiz.length < 10) {
+                const index = Math.floor(Math.random() * questionTemplates.length);
+                if(!usedIndices.has(index)) {
+                    usedIndices.add(index);
+                    currentQuiz.push(generateQuestion(questionTemplates[index]));
+                }
+            }
+            
+            displayQuiz();
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('certificate').style.display = 'none';
+            document.getElementById('certBtn').style.display = 'none';
+        }
+        
+        function displayQuiz() {
+            let html = '';
+            
+            currentQuiz.forEach((q, index) => {
+                html += `<div class="question">`;
+                html += `<h3>Question ${index + 1}</h3>`;
+                html += `<p>${q.text}</p>`;
+                if(q.diagram) html += q.diagram;
+                
+                if(q.type === 'mcq') {
+                    q.options.forEach((option, optIndex) => {
+                        html += `
+                        <label>
+                            <input type="radio" name="q${index}" value="${option}">
+                            ${option}
+                        </label>`;
+                    });
+                } else {
+                    html += `
+                    <label>
+                        Answer: <input type="text" id="q${index}" placeholder="Enter answer">
+                        (round to 1 decimal place)
+                    </label>`;
+                }
+                
+                html += `</div>`;
+            });
+            
+            document.getElementById('quiz').innerHTML = html;
+        }
+        
+        function checkAnswers() {
+            let score = 0;
+            let results = [];
+            
+            currentQuiz.forEach((q, index) => {
+                let userAnswer;
+                
+                if(q.type === 'mcq') {
+                    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                    userAnswer = selected ? selected.value : '';
+                } else {
+                    userAnswer = document.getElementById(`q${index}`).value.trim();
+                }
+                
+                // Compare answers (allow for rounding differences)
+                let isCorrect = false;
+                if(userAnswer !== '') {
+                    if(q.type === 'mcq') {
+                        isCorrect = userAnswer === q.correct;
+                    } else {
+                        const userNum = parseFloat(userAnswer);
+                        const correctNum = parseFloat(q.correct);
+                        isCorrect = !isNaN(userNum) && Math.abs(userNum - correctNum) < 0.1;
+                    }
+                }
+                
+                if(isCorrect) {
+                    score++;
+                    results.push(`<span class="correct">Q${index+1}: Correct ✓</span>`);
+                } else {
+                    results.push(`<span class="incorrect">Q${index+1}: Incorrect ✗ (Correct: ${q.correct})</span>`);
+                }
+            });
+            
+            const percentage = (score/10)*100;
+            let resultHTML = `<h2>Your Score: <span class="score">${score}/10 (${percentage}%)</span></h2>`;
+            resultHTML += `<div>${results.join('<br>')}</div>`;
+            
+            if(score === 10) {
+                resultHTML += `<h2 class="correct">🎉 Perfect Score! You've mastered Pythagoras!</h2>`;
+                document.getElementById('certBtn').style.display = 'inline-block';
+                // Ask for name if not already set
+                if(!localStorage.getItem('studentName')) {
+                    const name = prompt("Enter your name for the certificate:");
+                    if(name) localStorage.setItem('studentName', name);
+                }
+            } else {
+                resultHTML += `<p>Click "New Quiz" to try again!</p>`;
+            }
+            
+            document.getElementById('result').innerHTML = resultHTML;
+        }
+        
+        function showCertificate() {
+            const cert = document.getElementById('certificate');
+            cert.style.display = 'block';
+            
+            const name = localStorage.getItem('studentName') || 'Mathematics Student';
+            document.getElementById('studentName').textContent = name;
+            
+            const now = new Date();
+            document.getElementById('certDate').textContent = now.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            cert.scrollIntoView({behavior: 'smooth'});
+        }
+        
+        function printCertificate() {
+            window.print();
+        }
+        
+        function shareCertificate() {
+            if(navigator.share) {
+                navigator.share({
+                    title: 'My Pythagoras Certificate',
+                    text: `I scored 100% on the Pythagoras Theorem Quiz!`,
+                    url: window.location.href
+                });
+            } else {
+                alert('Share this link: ' + window.location.href);
+            }
+        }
+        
+        // Initialize on page load
+        window.onload = generateNewQuiz;
+    </script>
+</body>
+</html>
+</html>
